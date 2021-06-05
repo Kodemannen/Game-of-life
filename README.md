@@ -1,2 +1,2 @@
 # Game-of-life
-Cellular atomatons
+Cellular automata in C++
