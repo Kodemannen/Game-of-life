@@ -5,10 +5,13 @@
 using namespace std;
 using namespace arma;
 
-
-// Create function for extracting a slice
-
 //#include <iomanip>
+
+
+// Declaring functions:
+void fill_rulemat(cube& rulemat, vec rulevec); 
+
+
 
 int main () {
 
@@ -27,16 +30,18 @@ int main () {
     arma_rng::set_seed(0); 
 
     // 1-dimensional cellular automata thing
-    int N_x = 10;                   // number of units in the grid
+    int const N_x = 10;                     // number of units in the grid
+    int const KERNEL_SIZE = 3;              // the triplet 
 
-    int N_RULES = pow(2, N_x);      // pow exists in armadillo 
+    int const N_RULES = pow(2, KERNEL_SIZE);      // pow exists in armadillo 
     int RULES[ N_RULES ];
 
-    int T = 1;                   // number of timesteps/generations
+    int const T = 1;                   // number of timesteps/generations
 
 
     // We can use uvec to slice!
     rowvec pop = randi<rowvec>( N_x , distr_param(0, 9) );  
+
     uvec indices = {1,2,7};
     rowvec slice = pop.cols(indices);
     
@@ -47,22 +52,34 @@ int main () {
     //cout << pop << endl;
 
     
+    vec rulevec = linspace(0, N_RULES, N_RULES+1);
+    //mat rulemat = rules.reshape(2,2, 2)//
+    // not sure how to do this
     
+    cube rulemat(2,2,2);
 
+
+    fill_rulemat(rulemat, rulevec);
+    
+    //cout << rules << endl;
+    cout << rulemat << endl;
+
+    cout << "NASDAW" << endl;
+    exit(3);
+
+
+    
     // Iterating over generations:
     for (int t=0; t<T; t++) {
 
         // Iterating over the units in the population:
-        for (int i=1; i<N_x-1; i++) {
-            
-            // not sure why, but it gives a warning unless I do this:
-            //
-            long unsigned a = i-1; long unsigned b = i; long unsigned c = i+1;
+        for (int unsigned i=1; i<N_x-1; i++) {
+            // getting warning if I don't use unsigned
 
-            uvec indices = {a, b, c};
-
-            //uvec indices = {0,1,2};
+            // extract current triplet:
+            uvec indices = {i-1, i, i+1};
             rowvec triplet = pop.cols(indices);  
+
             cout << triplet << endl;
 
 
@@ -78,3 +95,30 @@ int main () {
     return 0;
 }
 
+
+
+
+void fill_rulemat(cube& rulemat, vec rulevec) {
+    /*
+    Fills up a matrix with elements in rulevec 
+    */
+
+    //rulemat.zeros();
+
+    int n_elem = rulemat.n_elem;
+
+    int n_rows = rulemat.n_rows;
+    int n_cols = rulemat.n_cols;
+    int n_slices = rulemat.n_slices;
+    
+    int ind=0;
+    for (double i=0; i<n_rows; i++) {
+        for (double j=0; j<n_cols; j++) {
+            for (double k=0; k<n_slices; k++) {
+
+                rulemat(k, j, i) = rulevec(ind);
+                ind += 1;
+            }
+        }
+    }
+}
