@@ -29,27 +29,27 @@ int main () {
     The value of unit_i in the next generation is a function of this triplet.
 
 
-                           Ruleset example:
+                        Computation example:
 
-                    Triplet:       Value next generation:
+                    Triplet:           Rule vector: 
 
-                        000       ->         1         
-                        100       ->         0      
-                        010       ->         1      
-                        110       ->         1       ->   This column is rulevec  
-                        001       ->         0             
-                        101       ->         0      
-                        011       ->         0      
-                        111       ->         1      
-
+                      000                   1  
+                      001                   1          
+                      010                   0
+                      011      --->         0
+                      100                   1        
+                      101                   1            
+                      110                   1  
+                      111                   1  
+       
     */
  
-    //arma::arma_rng::set_seed(0); 
+    //arma::arma_rng::set_seed(2); 
     arma::arma_rng::set_seed_random(); 
 
     // 1-dimensional cellular automata thing
-    int const N_x = 400;                         // number of units in the grid
-    int const T = 1500;   // Number of timesteps/generations after the 0th.
+    int const N_x = 41;                         // number of units in the grid
+    int const T = 700;   // Number of timesteps/generations after the 0th.
                         // We end up with T+1 in total. 
     int const KERNEL_SIZE = 3;                  // the triplet 
 
@@ -58,14 +58,32 @@ int main () {
 
 
 
-    arma::rowvec pop = arma::randi<arma::rowvec>( N_x , arma::distr_param(0, 1) );  
+    //----------------------------------------------------------
+    // Generate the population, or whatever we want to call it:
+    //----------------------------------------------------------
+    // Random initial pop:
+    //arma::rowvec pop = arma::randi<arma::rowvec>( N_x , arma::distr_param(0, 1) );  
+    //pop(0) = 0;             // forcing the initial edges to a set value
+    //pop(N_x-1) = 0;         
+    
+    arma::rowvec pop = arma::ones<arma::rowvec>( N_x );  
+    pop(N_x/2) = 0;         // set middle to 0
+    
+    
+
+
 
 
 
     //----------------------------------------------------------
-    // Random generate a rule vector:
+    // Generate rule vector:
     //----------------------------------------------------------
-    arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
+    //random rules:
+    //arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
+    
+    // Generate specific rules:
+    arma::vec rulevec = {0,0,0,1,1,1,1,0};    // rule 30
+    //arma::vec rulevec = {0,0,1,1,0,1,1,0};      // rule 54
 
 
     //----------------------------------------------------------
@@ -78,7 +96,7 @@ int main () {
     
 
     //----------------------------------------------------------
-    // create a file that contains the rulevector:
+    // Create a file that stores the rulevector:
     //----------------------------------------------------------
     std::ofstream rulevecfile;
     rulevecfile.open("rulevec.txt");
@@ -88,7 +106,7 @@ int main () {
 
 
     //----------------------------------------------------------
-    // Create file for writing the pop:
+    // Create file for writing the population each generation:
     //----------------------------------------------------------
 
     std::ofstream popfile;
@@ -103,11 +121,25 @@ int main () {
         for (int unsigned i=1; i<N_x-1; i++) {
             // getting warning if I don't use unsigned
 
-            // extract current triplet:
-            arma::uvec indices = {i-1, i, i+1};
-            arma::rowvec triplet = pop.cols(indices);  
+            int new_val;
 
-            int new_val = rulemat(triplet(0), triplet(1), triplet(2));
+            // If not on an edge:
+            if (i != 0 && i != N_x-1 ) {
+                new_val = rulemat(pop(i-1), pop(i), pop(i+1));
+            }
+
+            // Periodic boundary conditions:
+            else {
+                if (i == 0){
+                    new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));
+                }
+                else if (i == N_x-1) {
+                    new_val = rulemat(pop(i-1), pop(i), pop(0));
+                }
+            }
+
+
+
 
             // updating to next generation:
             pop(i) = new_val;
@@ -132,10 +164,10 @@ int main () {
 void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
 
     /*
-    Fills up a matrix with the elements of the vector rulevec 
+    Fills up a matrix with the elements of the vector rulevec.
+    This is used to get the new state for cell_i given the 
+    triplet consisting of cell_i and its neighbours.
     */
-
-    int n_elem = rulemat.n_elem;
 
     int n_rows = rulemat.n_rows;
     int n_cols = rulemat.n_cols;
@@ -146,11 +178,21 @@ void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
         for (int j=0; j<n_cols; j++) {
             for (int k=0; k<n_slices; k++) {
 
-                rulemat(k, j, i) = rulevec(ind);
+                rulemat(i, j, k) = rulevec(ind);
                 ind += 1;
 
-                //std::cout << k << j << i << std::endl;
+                //std::cout << i << j << k << std::endl;
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
