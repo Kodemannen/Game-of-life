@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+
 //#include <cmath>
 #include <armadillo>
 
@@ -42,26 +44,57 @@ int main () {
 
     */
  
-    arma::arma_rng::set_seed(0); 
+    //arma::arma_rng::set_seed(0); 
+    arma::arma_rng::set_seed_random(); 
 
     // 1-dimensional cellular automata thing
-    int const N_x = 10;                         // number of units in the grid
+    int const N_x = 400;                         // number of units in the grid
+    int const T = 1500;   // Number of timesteps/generations after the 0th.
+                        // We end up with T+1 in total. 
     int const KERNEL_SIZE = 3;                  // the triplet 
 
     int const N_RULES = pow(2, KERNEL_SIZE);    // pow gets included by armadillo 
     int RULES[ N_RULES ];
 
-    int const T = 100;                   // number of timesteps/generations
 
 
     arma::rowvec pop = arma::randi<arma::rowvec>( N_x , arma::distr_param(0, 1) );  
 
-    //arma::vec rulevec = {1, 0, 1, 1, 0, 0, 0, 1};
-    arma::vec rulevec = {0, 0, 0, 1, 1, 0, 0, 1};
 
+
+    //----------------------------------------------------------
+    // Random generate a rule vector:
+    //----------------------------------------------------------
+    arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
+
+
+    //----------------------------------------------------------
+    // Create a cube that maps the triplet to a binary value,
+    // that being the value of node i in the next generation,
+    // given the specific triplet.
+    //----------------------------------------------------------
     arma::cube rulemat(2,2,2);
     fill_rulemat(rulemat, rulevec);
     
+
+    //----------------------------------------------------------
+    // create a file that contains the rulevector:
+    //----------------------------------------------------------
+    std::ofstream rulevecfile;
+    rulevecfile.open("rulevec.txt");
+    rulevecfile << rulevec;
+    rulevecfile.close();
+
+
+
+    //----------------------------------------------------------
+    // Create file for writing the pop:
+    //----------------------------------------------------------
+
+    std::ofstream popfile;
+    popfile.open("pop.txt");
+
+    popfile << pop << std::endl;
 
     // Iterating over generations:
     for (int t=0; t<T; t++) {
@@ -78,28 +111,28 @@ int main () {
 
             // updating to next generation:
             pop(i) = new_val;
-
         }
 
-        std::cout << pop << std::endl;
-
+        // write current pop to file:
+        popfile << pop << std::endl;
     }
+    popfile.close();
     
 
     //cout << pop << endl;
 
 
-    std::cout << "Funker" << std::endl;
+    std::cout << "C++ done" << std::endl;
+    std::cout << "----------------------------------------" << std::endl;
     return 0;
 }
-
 
 
 
 void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
 
     /*
-    Fills up a matrix with elements in rulevec 
+    Fills up a matrix with the elements of the vector rulevec 
     */
 
     int n_elem = rulemat.n_elem;
