@@ -2,14 +2,14 @@
 //#include <cmath>
 #include <armadillo>
 
-using namespace std;
-using namespace arma;
+//using namespace std;
+//using namespace arma;
 
 //#include <iomanip>
 
 
 // Declaring functions:
-void fill_rulemat(cube& rulemat, vec rulevec); 
+void fill_rulemat(arma::cube& rulemat, arma::vec rulevec); 
 
 
 
@@ -25,50 +25,44 @@ int main () {
     The number of possible microstates for this triplet is 2^N_x
 
     The value of unit_i in the next generation is a function of this triplet.
+
+
+                           Ruleset example:
+
+                    Triplet:       Value next generation:
+
+                        000       ->         1         
+                        100       ->         0      
+                        010       ->         1      
+                        110       ->         1       ->   This column is rulevec  
+                        001       ->         0             
+                        101       ->         0      
+                        011       ->         0      
+                        111       ->         1      
+
     */
  
-    arma_rng::set_seed(0); 
+    arma::arma_rng::set_seed(0); 
 
     // 1-dimensional cellular automata thing
-    int const N_x = 10;                     // number of units in the grid
-    int const KERNEL_SIZE = 3;              // the triplet 
+    int const N_x = 10;                         // number of units in the grid
+    int const KERNEL_SIZE = 3;                  // the triplet 
 
-    int const N_RULES = pow(2, KERNEL_SIZE);      // pow exists in armadillo 
+    int const N_RULES = pow(2, KERNEL_SIZE);    // pow gets included by armadillo 
     int RULES[ N_RULES ];
 
-    int const T = 1;                   // number of timesteps/generations
+    int const T = 100;                   // number of timesteps/generations
 
 
-    // We can use uvec to slice!
-    rowvec pop = randi<rowvec>( N_x , distr_param(0, 9) );  
+    arma::rowvec pop = arma::randi<arma::rowvec>( N_x , arma::distr_param(0, 1) );  
 
-    uvec indices = {1,2,7};
-    rowvec slice = pop.cols(indices);
-    
-    cout << pop << endl;
-    cout << slice << endl;
-    //cout << pop.submat(indices) << endl;
-    //cout << indices << endl;
-    //cout << pop << endl;
+    //arma::vec rulevec = {1, 0, 1, 1, 0, 0, 0, 1};
+    arma::vec rulevec = {0, 0, 0, 1, 1, 0, 0, 1};
 
-    
-    vec rulevec = linspace(0, N_RULES, N_RULES+1);
-    //mat rulemat = rules.reshape(2,2, 2)//
-    // not sure how to do this
-    
-    cube rulemat(2,2,2);
-
-
+    arma::cube rulemat(2,2,2);
     fill_rulemat(rulemat, rulevec);
     
-    //cout << rules << endl;
-    cout << rulemat << endl;
 
-    cout << "NASDAW" << endl;
-    exit(3);
-
-
-    
     // Iterating over generations:
     for (int t=0; t<T; t++) {
 
@@ -77,13 +71,17 @@ int main () {
             // getting warning if I don't use unsigned
 
             // extract current triplet:
-            uvec indices = {i-1, i, i+1};
-            rowvec triplet = pop.cols(indices);  
+            arma::uvec indices = {i-1, i, i+1};
+            arma::rowvec triplet = pop.cols(indices);  
 
-            cout << triplet << endl;
+            int new_val = rulemat(triplet(0), triplet(1), triplet(2));
 
+            // updating to next generation:
+            pop(i) = new_val;
 
         }
+
+        std::cout << pop << std::endl;
 
     }
     
@@ -91,19 +89,18 @@ int main () {
     //cout << pop << endl;
 
 
-    cout << "Funker" << endl;
+    std::cout << "Funker" << std::endl;
     return 0;
 }
 
 
 
 
-void fill_rulemat(cube& rulemat, vec rulevec) {
+void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
+
     /*
     Fills up a matrix with elements in rulevec 
     */
-
-    //rulemat.zeros();
 
     int n_elem = rulemat.n_elem;
 
@@ -112,12 +109,14 @@ void fill_rulemat(cube& rulemat, vec rulevec) {
     int n_slices = rulemat.n_slices;
     
     int ind=0;
-    for (double i=0; i<n_rows; i++) {
-        for (double j=0; j<n_cols; j++) {
-            for (double k=0; k<n_slices; k++) {
+    for (int i=0; i<n_rows; i++) {
+        for (int j=0; j<n_cols; j++) {
+            for (int k=0; k<n_slices; k++) {
 
                 rulemat(k, j, i) = rulevec(ind);
                 ind += 1;
+
+                //std::cout << k << j << i << std::endl;
             }
         }
     }
