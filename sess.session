@@ -7,7 +7,7 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +44 main.cpp
+badd +52 main.cpp
 badd +34 ~/repos/useful-stuff/topics/cpp/test.cpp
 badd +30 compile.sh
 badd +310 ~/repos/useful-stuff/dotfiles/bashaliases.sh
@@ -16,7 +16,7 @@ badd +12 ~/repos/useful-stuff/topics/python/test.py
 badd +1 ~/repos
 badd +2 pop.txt
 badd +118 ~/repos/useful-stuff/dotfiles/init.vim
-badd +68 plot.py
+badd +27 plot.py
 badd +191 ~/repos/useful-stuff/topics/python/notes.py
 badd +47 ~/repos/useful-stuff/topics/other/tekster.txt
 badd +1 ~/repos/useful-stuff/topics/music/music.tex
@@ -25,18 +25,17 @@ badd +392 ~/repos/useful-stuff/topics/other/ideas.txt
 badd +20 ~/.bashrc
 badd +40 .gitignore
 badd +2 term://.//6965:/bin/bash
-badd +0 term://.//6977:/bin/bash
+badd +1 term://.//5715:/bin/bash
 argglobal
 %argdel
 $argadd main.cpp
-edit main.cpp
+edit plot.py
 set splitbelow splitright
 wincmd _ | wincmd |
 split
-1wincmd k
 wincmd _ | wincmd |
-vsplit
-1wincmd h
+split
+2wincmd k
 wincmd w
 wincmd w
 set nosplitbelow
@@ -45,11 +44,9 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 35 + 27) / 54)
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 35 + 27) / 54)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 16 + 27) / 54)
+exe '1resize ' . ((&lines * 17 + 26) / 52)
+exe '2resize ' . ((&lines * 16 + 26) / 52)
+exe '3resize ' . ((&lines * 15 + 26) / 52)
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -60,7 +57,25 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 52 - ((25 * winheight(0) + 17) / 35)
+let s:l = 27 - ((16 * winheight(0) + 8) / 17)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+27
+normal! 0
+wincmd w
+argglobal
+if bufexists("main.cpp") | buffer main.cpp | else | edit main.cpp | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 52 - ((10 * winheight(0) + 8) / 16)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -68,7 +83,7 @@ normal! zt
 normal! 019|
 wincmd w
 argglobal
-if bufexists("plot.py") | buffer plot.py | else | edit plot.py | endif
+if bufexists("term://.//5715:/bin/bash") | buffer term://.//5715:/bin/bash | else | edit term://.//5715:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -77,37 +92,16 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-silent! normal! zE
-let s:l = 68 - ((30 * winheight(0) + 17) / 35)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-68
-normal! 0
-wincmd w
-argglobal
-if bufexists("term://.//6977:/bin/bash") | buffer term://.//6977:/bin/bash | else | edit term://.//6977:/bin/bash | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 1 - ((0 * winheight(0) + 8) / 16)
+let s:l = 1 - ((0 * winheight(0) + 7) / 15)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 1
 normal! 0
 wincmd w
-3wincmd w
-exe '1resize ' . ((&lines * 35 + 27) / 54)
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 35 + 27) / 54)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 16 + 27) / 54)
+exe '1resize ' . ((&lines * 17 + 26) / 52)
+exe '2resize ' . ((&lines * 16 + 26) / 52)
+exe '3resize ' . ((&lines * 15 + 26) / 52)
 tabnext 1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

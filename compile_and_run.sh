@@ -27,4 +27,5 @@ echo "  "
 ./writefile 
 
 # plot in python:
-python3 animate.py
+#python3 animate.py
+python3 plot.py

@@ -7,6 +7,7 @@ import os
 
 with open("pop.txt", "r") as popfile:
     data = np.loadtxt(popfile)
+    #data = abs(data - 1)
 
 with open("rulevec.txt", "r") as f:
     rulevec = np.loadtxt(f, dtype=np.int32)
@@ -23,7 +24,7 @@ N_GENERATIONS = data.shape[0]
 POPSIZE = data.shape[1]
 SCREEN_SIZE_Y = POPSIZE     # how big screen in y-direction
 
-fps = 60
+fps = 30
 
 
 startmark = np.array([0])
@@ -33,7 +34,7 @@ endmark = np.array([2])
 #current_screen[-1, :] = data[0, :]         # start at the top 
 fig, ax = plt.subplots(nrows=1, ncols=1, sharex=False,  sharey=False)
 
-indices = np.arange(0, N_GENERATIONS-SCREEN_SIZE_Y)
+indices = np.arange(0, N_GENERATIONS)
 
 
 def update_frame(i):
@@ -65,7 +66,7 @@ Writer = animation.writers['ffmpeg']
 writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
 
 ani = animation.FuncAnimation(fig, update_frame, indices)   #, fargs=(count,indices))
-ani.save("1d_cellular_automata_" + rulevecstring + ".mp4", writer=writer, dpi=100)
+ani.save("1d_cellular_automata_" + rulevecstring + ".mp4", writer=writer, dpi=200)
 
 
 

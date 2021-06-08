@@ -23,10 +23,5 @@ POPSIZE = data.shape[1]
 
 fig, ax = plt.subplots(nrows=1, ncols=1, sharex=False,  sharey=False)
 
-# checking the distribution of sums
-sums = []
-for gen in range(N_GENERATIONS):
-
-
-
-
+ax.imshow(data)
+plt.savefig("testfig.pdf")

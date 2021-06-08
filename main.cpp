@@ -47,8 +47,8 @@ int main () {
     //arma::arma_rng::set_seed(2); 
     arma::arma_rng::set_seed_random(); 
 
-    int const N_x = 100;  // number of units in the row
-    int const T = 200;    // Number of timesteps/generations after the 
+    int const N_x = 30;  // number of units in the row
+    int const T = 60;    // Number of timesteps/generations after the 
                           // 0th. We end up with T+1 in total. 
 
     int const KERNEL_SIZE = 3;  // the triplet 
@@ -85,13 +85,18 @@ int main () {
     // Generate rule vector:
     //----------------------------------------------------------
     //random rules:
-    arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
+    //arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
     
     // Generate specific rules:
-    //arma::vec rulevec = {0,0,0,1,1,1,1,0};    // rule 30
+    arma::vec rulevec = {0,0,0,1,1,1,1,0};    // rule 30
     //arma::vec rulevec = {0,0,1,1,0,1,1,0};      // rule 54
 
-
+    
+    // found:
+    //arma::vec rulevec = {1,0,0,1,0,1,1,0};      
+    //arma::vec rulevec = {0,1,0,1,1,1,1,0};      
+    //arma::vec rulevec = {0,1,0,0,1,1,1,0};      
+    
     //----------------------------------------------------------
     // Create a cube that maps the triplet to a binary value,
     // that being the value of node i in the next generation,
@@ -139,7 +144,7 @@ int main () {
     for (int t=0; t<T; t++) {
 
         // Iterating over the units in the population:
-        for (int unsigned i=1; i<N_x-1; i++) {
+        for (int unsigned i=0; i<N_x; i++) {
             // getting warning if I don't use unsigned
 
             int new_val;
@@ -152,12 +157,12 @@ int main () {
             // Periodic boundary conditions:
             else {
                 if (i == 0){
-                    //new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));  // pbc 
-                    new_val = rulemat(0, pop(i), pop(i+1));             // zero-padding
+                    new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));  // pbc 
+                    //new_val = rulemat(0, pop(i), pop(i+1));             // zero-padding
                 }
                 else if (i == N_x-1) {
-                    //new_val = rulemat(pop(i-1), pop(i), pop(0));      // pbc
-                    new_val = rulemat(pop(i-1), pop(i), 0);             // zero-padding
+                    new_val = rulemat(pop(i-1), pop(i), pop(0));      // pbc
+                    //new_val = rulemat(pop(i-1), pop(i), 0);             // zero-padding
                 }
             }
 
@@ -185,6 +190,8 @@ int main () {
 
 void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
 
+    rulevec = (rulevec-1)*(-1);     // since wolfram uses 0 for white and 1 for black
+
     /*
     Fills up a matrix with the elements of the vector rulevec.
     This is used to get the new state for cell_i given the 
@@ -201,9 +208,9 @@ void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
             for (int k=0; k<n_slices; k++) {
 
                 rulemat(i, j, k) = rulevec(ind);
-                ind += 1;
 
-                std::cout << i << j << k << std::endl;
+                std::cout << i << j << k << " --> " << rulevec(ind) << std::endl;
+                ind += 1;
             }
         }
     }
