@@ -23,7 +23,7 @@ N_GENERATIONS = data.shape[0]
 POPSIZE = data.shape[1]
 SCREEN_SIZE_Y = POPSIZE     # how big screen in y-direction
 
-fps = 20
+fps = 10
 
 
 startmark = np.array([0])

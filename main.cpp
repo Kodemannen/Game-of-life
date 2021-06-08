@@ -47,19 +47,19 @@ int main () {
     //arma::arma_rng::set_seed(2); 
     arma::arma_rng::set_seed_random(); 
 
-    // 1-dimensional cellular automata thing
-    int const N_x = 41;                         // number of units in the grid
-    int const T = 700;   // Number of timesteps/generations after the 0th.
-                        // We end up with T+1 in total. 
-    int const KERNEL_SIZE = 3;                  // the triplet 
+    int const N_x = 21;  // number of units in the row
+    int const T = 100;    // Number of timesteps/generations after the 
+                          // 0th. We end up with T+1 in total. 
 
-    int const N_RULES = pow(2, KERNEL_SIZE);    // pow gets included by armadillo 
+    int const KERNEL_SIZE = 3;  // the triplet 
+
+    int const N_RULES = pow(2, KERNEL_SIZE);
     int RULES[ N_RULES ];
 
 
 
     //----------------------------------------------------------
-    // Generate the population, or whatever we want to call it:
+    // Generate the cell population, or whatever we want to call it:
     //----------------------------------------------------------
     // Random initial pop:
     //arma::rowvec pop = arma::randi<arma::rowvec>( N_x , arma::distr_param(0, 1) );  
@@ -68,10 +68,16 @@ int main () {
     
     arma::rowvec pop = arma::ones<arma::rowvec>( N_x );  
     pop(N_x/2) = 0;         // set middle to 0
+    // initial disturbances:
+    //pop(3) = 0;         
+    //pop(9) = 0;         
     
     
-
-
+    //----------------------------------------------------------
+    // Create placeholder for next generation:
+    //----------------------------------------------------------
+    arma::rowvec next_gen = arma::ones<arma::rowvec>( N_x );  
+    next_gen = pop;
 
 
 
@@ -93,6 +99,21 @@ int main () {
     //----------------------------------------------------------
     arma::cube rulemat(2,2,2);
     fill_rulemat(rulemat, rulevec);
+
+
+    // test
+    
+    //std::cout << rulemat(0,0,0) << std::endl;
+    //std::cout << rulemat(0,0,1) << std::endl;
+    //std::cout << rulemat(0,1,0) << std::endl;
+    //std::cout << rulemat(0,1,1) << std::endl;
+    //std::cout << rulemat(1,0,0) << std::endl;
+    //std::cout << rulemat(1,0,1) << std::endl;
+    //std::cout << rulemat(1,1,0) << std::endl;
+    //std::cout << rulemat(1,1,1) << std::endl;
+
+    //return 0;
+
     
 
     //----------------------------------------------------------
@@ -131,19 +152,23 @@ int main () {
             // Periodic boundary conditions:
             else {
                 if (i == 0){
-                    new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));
+                    new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));  // pbc 
+                    //new_val = rulemat(0, pop(i), pop(i+1));             // zero-padding
                 }
                 else if (i == N_x-1) {
-                    new_val = rulemat(pop(i-1), pop(i), pop(0));
+                    new_val = rulemat(pop(i-1), pop(i), pop(0));      // pbc
+                    //new_val = rulemat(pop(i-1), pop(i), 0);             // zero-padding
                 }
             }
 
 
 
 
-            // updating to next generation:
-            pop(i) = new_val;
+            // updating next generation:
+            next_gen(i) = new_val;
         }
+
+        pop = next_gen;
 
         // write current pop to file:
         popfile << pop << std::endl;
@@ -181,7 +206,7 @@ void fill_rulemat(arma::cube& rulemat, arma::vec rulevec) {
                 rulemat(i, j, k) = rulevec(ind);
                 ind += 1;
 
-                //std::cout << i << j << k << std::endl;
+                std::cout << i << j << k << std::endl;
             }
         }
     }
