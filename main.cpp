@@ -47,8 +47,8 @@ int main () {
     //arma::arma_rng::set_seed(2); 
     arma::arma_rng::set_seed_random(); 
 
-    int const N_x = 21;  // number of units in the row
-    int const T = 100;    // Number of timesteps/generations after the 
+    int const N_x = 100;  // number of units in the row
+    int const T = 200;    // Number of timesteps/generations after the 
                           // 0th. We end up with T+1 in total. 
 
     int const KERNEL_SIZE = 3;  // the triplet 
@@ -85,10 +85,10 @@ int main () {
     // Generate rule vector:
     //----------------------------------------------------------
     //random rules:
-    //arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
+    arma::vec rulevec = arma::randi<arma::vec>( N_RULES , arma::distr_param(0, 1) );  
     
     // Generate specific rules:
-    arma::vec rulevec = {0,0,0,1,1,1,1,0};    // rule 30
+    //arma::vec rulevec = {0,0,0,1,1,1,1,0};    // rule 30
     //arma::vec rulevec = {0,0,1,1,0,1,1,0};      // rule 54
 
 
@@ -145,24 +145,21 @@ int main () {
             int new_val;
 
             // If not on an edge:
-            if (i != 0 && i != N_x-1 ) {
+            if (i > 0 && i < N_x-1 ) {
                 new_val = rulemat(pop(i-1), pop(i), pop(i+1));
             }
 
             // Periodic boundary conditions:
             else {
                 if (i == 0){
-                    new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));  // pbc 
-                    //new_val = rulemat(0, pop(i), pop(i+1));             // zero-padding
+                    //new_val = rulemat(pop(N_x-1), pop(i), pop(i+1));  // pbc 
+                    new_val = rulemat(0, pop(i), pop(i+1));             // zero-padding
                 }
                 else if (i == N_x-1) {
-                    new_val = rulemat(pop(i-1), pop(i), pop(0));      // pbc
-                    //new_val = rulemat(pop(i-1), pop(i), 0);             // zero-padding
+                    //new_val = rulemat(pop(i-1), pop(i), pop(0));      // pbc
+                    new_val = rulemat(pop(i-1), pop(i), 0);             // zero-padding
                 }
             }
-
-
-
 
             // updating next generation:
             next_gen(i) = new_val;

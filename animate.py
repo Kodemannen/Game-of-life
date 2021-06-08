@@ -65,7 +65,7 @@ Writer = animation.writers['ffmpeg']
 writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
 
 ani = animation.FuncAnimation(fig, update_frame, indices)   #, fargs=(count,indices))
-ani.save("gameoflife" + rulevecstring + ".mp4", writer=writer, dpi=150)
+ani.save("1d_cellular_automata_" + rulevecstring + ".mp4", writer=writer, dpi=100)
 
 
 
