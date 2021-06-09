@@ -13,6 +13,11 @@
 #include <ctime>        // and rand() from here?
 
 
+
+sf::Uint8* pixels;
+sf::Uint8* armaMatrixToPixels(arma::mat state);
+
+
 int main () {
 
     /*
@@ -62,33 +67,21 @@ int main () {
     // make matrix that we want to visualize:
     //----------------------------------------
     
-    const unsigned int W = 100;
-    const unsigned int H = 100;
+    const unsigned int W = WINDOW_WIDTH;
+    const unsigned int H = WINDOW_HEIGHT;
 
-    // Make a matrix:
-    sf::Uint8* pixels = new sf::Uint8[W*H*4];
+    arma::mat state = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
+    std::cout << state.n_rows << std::endl;
 
-    // Texture class is needed.
+    pixels = armaMatrixToPixels(state);
+
+
+
     sf::Texture texture;
     texture.create(W,H);
 
     sf::Sprite sprite(texture);
-
-    for (register int i=0; i < W*H*4; i += 4) {
-        pixels[i]   = rand() % 100;   // r
-        pixels[i+1] = rand() % 100;   // g
-        pixels[i+2] = rand() % 100;   // b
-        pixels[i+3] = rand() % 100;   // a
-    }
-
-
-
-
-
-
-
-
-
+    //texture.update(pixels)
 
 
     window.setTitle("Testing");
@@ -139,16 +132,12 @@ int main () {
                     break;
             }
 
-            
-
-
             if (event.type == sf::Event::Closed) // 
                 window.close();
         }
 
+
         texture.update(pixels);
-
-
         window.draw(sprite);
 
         window.display();
@@ -160,12 +149,34 @@ int main () {
 }
 
 
-void rulefunc(){ 
+sf::Uint8* armaMatrixToPixels(arma::mat state){ 
 
+    int const H = state.n_rows;
+    int const W = state.n_cols;
+
+    // Make a matrix:
+    sf::Uint8* pixels = new sf::Uint8[W*H*4];
+    int val;
+
+    int ind=0; 
+    for (register int i=0; i<H; i++) {
+        for (register int j=0; j<W; j++) {
+
+            val = state(i,j)*255;
+
+            // each pixel is represented by a set of four numbers
+            // between 0 and 255
+            pixels[ind]   = val;      // R
+            pixels[ind+1] = val;      // G
+            pixels[ind+2] = val;      // B
+            pixels[ind+3] = val;      // a
+
+            ind += 4;
+        }
+    }
+
+    return pixels;
 }
-
-
-
 
 
 
