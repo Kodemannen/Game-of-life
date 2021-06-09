@@ -1,18 +1,16 @@
 #include <iostream>
 #include <fstream>
-
-//#include <cmath>
 #include <armadillo>
 
-//using namespace std;
-//using namespace arma;
+//#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 
-//#include <iomanip>
+#include <SFML/OpenGL.hpp>
 
 
-// Declaring functions:
-void fill_rulemat(arma::cube& rulemat, arma::vec rulevec); 
-
+// random numbers:
+#include <cstdlib>      // srand() from here?
+#include <ctime>        // and rand() from here?
 
 
 int main () {
@@ -25,92 +23,139 @@ int main () {
               \____|\__,_|_| |_| |_|\___|  \___/|_|   |_|_|_|  \___|
                                                                 
     */
+    // rng seed:
+    srand( (unsigned)time(NULL)); 
+    srand(2);   
+
+    // window size:
+    int const WINDOW_WIDTH = 500; 
+    int const WINDOW_HEIGHT = 500;
  
-    //arma::arma_rng::set_seed(2); 
-    arma::arma_rng::set_seed_random(); 
+    //----------------------------------------
+    // Create window instance:
+    //----------------------------------------
+    sf::RenderWindow window(sf::VideoMode(500, 500), "My window");
+    //sf::RenderWindow window;
+    // can take a third argument: sf::Style::Fullscreen
+    // or sf::Style::Resize, and more.
 
-    int const N = 300;    // number of cells per dim
-    int const T = 300;    // number of timesteps/generations
-
-    int const KERNEL_SIZE = 3;  // the triplet 
-
-    int const N_RULES = pow(2, KERNEL_SIZE);
-    int RULES[ N_RULES ];
-
-
-
-    //----------------------------------------------------------
-    // Generate the cell population, or whatever we want to call it:
-    //----------------------------------------------------------
-    // Random initial scene:
-    //arma::rowvec scene = arma::randi<arma::rowvec>( N_x , arma::distr_param(0, 1) );  
-    
-    arma::mat scene = arma::ones<arma::mat>( N, N );  
-    scene(N/2, N/2) = 0;         // set middle to 0
-    // initial disturbances:
-    //scene(3) = 0;         
-    //scene(9) = 0;         
-    
-    
-    //----------------------------------------------------------
-    // Create placeholder for next generation:
-    //----------------------------------------------------------
-    arma::mat next_gen = arma::ones<arma::mat>( N, N );  
-    next_gen = scene;
-
-    //int n_rows = scene.n_rows;
-    //int n_cols = scene.n_cols;
-
-
-
-
+    glEnable(GL_TEXTURE_2D);
     
 
-    /*
-    //----------------------------------------------------------
-    // Create a file that stores the rulevector:
-    //----------------------------------------------------------
-    std::ofstream rulevecfile;
-    rulevecfile.open("rulevec.txt");
-    rulevecfile << rulevec;
-    rulevecfile.close();
+    // get the application to run at the same freq as the monitor refresh rate
+    //window.setVerticalSyncEnabled(true); 
+
+    // Alternative:
+    //window.setFramerateLimit(60);
+
+
+    //----------------------------------------
+    // Set screen position and size:
+    //----------------------------------------
+    // (x, y), where (0,0) is top right corner
+    window.setPosition(sf::Vector2i(0,20)); 
+    window.setSize(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT));
 
 
 
-    //----------------------------------------------------------
-    // Create file for writing the population each generation:
-    //----------------------------------------------------------
+    //----------------------------------------
+    // make matrix that we want to visualize:
+    //----------------------------------------
+    
+    const unsigned int W = 100;
+    const unsigned int H = 100;
 
-    std::ofstream popfile;
-    popfile.open("scene.txt");
-    popfile << scene << std::endl;
+    // Make a matrix:
+    sf::Uint8* pixels = new sf::Uint8[W*H*4];
 
-    // Iterating over generations:
-    for (int t=0; t<T; t++) {
+    // Texture class is needed.
+    sf::Texture texture;
+    texture.create(W,H);
 
-        // Iterating over the units in the population:
-        for (int unsigned i=0; i<N_x; i++) {
-            // getting warning if I don't use unsigned
+    sf::Sprite sprite(texture);
 
-
-        }
-
-        scene = next_gen;
-
-        // write current scene to file:
-        popfile << scene << std::endl;
+    for (register int i=0; i < W*H*4; i += 4) {
+        pixels[i]   = rand() % 100;   // r
+        pixels[i+1] = rand() % 100;   // g
+        pixels[i+2] = rand() % 100;   // b
+        pixels[i+3] = rand() % 100;   // a
     }
 
 
-    popfile.close();
+
+
+
+
+
+
+
+
+
+    window.setTitle("Testing");
     
+    // get the size of the window
+    //sf::Vector2u size = window.getSize();
+    //unsigned int width = size.x;
+    //unsigned int height = size.y;
 
-    //cout << scene << endl;
+
+    window.setActive(true);
+    window.display();
 
 
-    std::cout << "C++ done" << std::endl;
-    std::cout << "----------------------------------------" << std::endl;
-    */
+
+
+
+
+
+
+
+
+
+    bool running = true;
+    while (running) {
+
+        // initialize the event thing:
+        sf::Event event;    
+
+        while (window.pollEvent(event)){
+            // sf::Event::Closed = 1 when the close button is presset
+            
+            // Events:
+            switch (event.type) {
+
+                case sf::Event::Closed:     // like an if test
+                    running = false;
+                    window.close();
+                    break;
+
+                case sf::Event::KeyPressed:
+                    std::cout << "key pressed" << std::endl;
+
+                case sf::Event::TextEntered:
+                    std::cout << static_cast<char>(event.text.unicode) << std::endl;
+
+                default:
+                    break;
+            }
+
+            
+
+
+            if (event.type == sf::Event::Closed) // 
+                window.close();
+        }
+
+        texture.update(pixels);
+
+
+        window.draw(sprite);
+
+        window.display();
+
+    }
+
+    
     return 0;
 }
 
