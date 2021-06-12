@@ -7,20 +7,14 @@
 
 #include <SFML/OpenGL.hpp>
 
-
 // random numbers:
 #include <cstdlib>      // srand() from here?
 #include <ctime>        // and rand() from here?
 
-//#include <Eigen/Dense>
-
-
-//Eigen::MatrixXd state;
-sf::Uint8* pixels;
-//sf::Uint8* eigenMatrixToPixels(Eigen::MatrixXd state); 
-
-
 sf::Uint8* armaMatrixToPixels(arma::mat state);
+
+arma::mat getNextGen(arma::mat state, arma::mat newState); 
+//arma:: mat neighbourhood(3,3);
 
 //sf::Uint8* fillWithRandom(int const N_ROWS, int const N_COLS);
 
@@ -86,26 +80,22 @@ int main () {
 
 
     //----------------------------------------
-    // initialize Eigen matrix
+    // initialize:
     //----------------------------------------
-    //Eigen::MatrixXd state(H, W);
+    // make matrix for the current state:
     arma::mat state = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
 
+    // make placeholder for the next generation:
+    arma::mat newState = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
 
 
     // initialize pixels matrix:
     //sf::Uint8* pixels = new sf::Uint8[W*H*4];
-    
-    //sf::Uint8* pixels; 
-    //pixels =  eigenMatrixToPixels(Eigen::MatrixXd state);
+    sf::Uint8* pixels; 
     pixels = armaMatrixToPixels(state);  
     
 
     //fillWithRandomBinary(pixels, W, H);
-
-    /* for (int i=0; i<40; i++) { */
-    /*     std::cout << pixels[i] << std::endl; */
-    /* } */
 
 
     sf::Texture texture;
@@ -125,12 +115,6 @@ int main () {
 
     window.setActive(true);
     window.display();
-
-
-
-
-
-
 
 
 
@@ -170,43 +154,68 @@ int main () {
                 window.close();
         }
 
-        // clear the window with black color
-        window.clear(sf::Color::Black);
-
-        //std::cout << state.n_rows << std::endl;
-        
+        //----------------------------------------
+        // Update state matrix here:
+        //----------------------------------------
         //state = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
-
-
-        for (int i=0; i<count; i++) {
-            for (int j=0; j<count; j++) {
-
-                state(i,j) = 0;
-            }
-        }
-        std::cout << count << std::endl;
-
-        pixels = armaMatrixToPixels(state);
+        newState = getNextGen(state, newState);
+        pixels = armaMatrixToPixels(newState);
        
         
-        //fillWithRandomBinary(pixels, W, H);
+        //----------------------------------------
+        // update old state
+        //----------------------------------------
+        state = newState;
 
+
+        //----------------------------------------
+        // Clear and update screen:
+        //----------------------------------------
+        window.clear(sf::Color::Black);
 
         texture.update(pixels);
         window.draw(sprite);
-
         window.display();
-
-        count += 1 ;
-        count = count % W;
-
     }
-
     
     return 0;
 }
 
 
+arma::mat getNextGen(arma::mat state, arma::mat newState) {
+    
+    int const H = state.n_rows;
+    int const W = state.n_cols;
+
+    //arma::mat newState = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
+    //arma::mat newState = arma::diagmat(state);
+    //arma:: mat neighbourhood(3,3);
+
+    for (int i=1; i<W-1; i++) {
+        for (int j=1; j<H-1; j++) {
+
+            if (i !=0 && j !=0) {
+
+            auto current = state(i,j);
+
+            // Neighbourhood:
+            auto neighbourhood = state(arma::span(i-1,i+1), arma::span(j-1,j+1));
+            std::cout << neighbourhood << std::endl;
+
+            break;
+            }
+
+        }
+    }
+
+    return newState;
+}
+
+
+int applyRules(arma::mat neighourhood) {
+
+    return 0;
+}
 
 
 
@@ -223,8 +232,8 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
     for (register int i=0; i<H; i++) {
         for (register int j=0; j<W; j++) {
 
-            val = state(i,j)*255;
-            //val = rand() % 255;
+            //val = state(i,j)*255;
+            val = rand() % 255;
             //std::cout << val << std::endl;
 
             // each pixel is represented by a set of four numbers
@@ -270,42 +279,3 @@ void fillWithRandomBinary(sf::Uint8* pixels, int const N_ROWS, int const N_COLS)
 }
 
 
-//void fillPixelsWithEigen(sf::Uint8* pixels, Eigen::);
-
-
-
-
-/* sf::Uint8* eigenMatrixToPixels(Eigen::MatrixXd state){ */ 
-
-/*     //Eigen::MatrixXd state(H, W); */
-
-/*     /1* int const H = state.n_rows; *1/ */
-/*     /1* int const W = state.n_cols; *1/ */
-/*     int const H = state.rows(); */
-/*     int const W = state.cols(); */
-
-/*     // Make a matrix: */
-/*     sf::Uint8* pixels = new sf::Uint8[W*H*4]; */
-/*     int val; */
-
-/*     int ind=0; */ 
-/*     for (register int i=0; i<H; i++) { */
-/*         for (register int j=0; j<W; j++) { */
-
-/*             val = state(i,j)*255; */
-/*             //val = rand() % 255; */
-/*             std::cout << val << std::endl; */
-
-/*             // each pixel is represented by a set of four numbers */
-/*             // between 0 and 255 */
-/*             pixels[ind]   = val;      // R */
-/*             pixels[ind+1] = val;      // G */
-/*             pixels[ind+2] = val;      // B */
-/*             pixels[ind+3] = val;      // a */
-
-/*             ind += 4; */
-/*         } */
-/*     } */
-
-/*     return pixels; */
-/* } */
