@@ -89,10 +89,29 @@ int main () {
     // 0s represent dead cells, 1s represent alive ones.
     
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
-    //arma::mat state = arma::randi<arma::mat>( W+2, H+2 , arma::distr_param(0, 1) );  
-    arma::mat state = arma::zeros<arma::mat>( W+2, H+2 );  
-    int d = 100;
-    state(arma::span(50,50+d-1), arma::span(50,50+d-1)) = arma::ones<arma::mat>(d,d);
+    arma::mat state = arma::randi<arma::mat>( W+2, H+2 , arma::distr_param(0, 1) );  
+    //arma::mat state = arma::zeros<arma::mat>( W+2, H+2 );  
+
+
+    int d; int posx; int posy;
+    
+    // Add a square
+    d = 30;
+    posx = 10; 
+    posy = 10; 
+    state(arma::span(posx,posx+d-1), arma::span(posy,posy+d-1)) = arma::ones<arma::mat>(d,d);
+
+    // Add a square
+    d = 40;
+    posx = 40; 
+    posy = 40;
+    state(arma::span(posx,posx+d-1), arma::span(posy,posy+d-1)) = arma::ones<arma::mat>(d,d);
+
+    // Add a square
+    d = 40;
+    posx = 70;
+    posy = 90;
+    state(arma::span(posx,posx+d-1), arma::span(posy,posy+d-1)) = arma::ones<arma::mat>(d,d);
 
 
     // Apply periodic boundary conditions:
