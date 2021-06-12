@@ -14,10 +14,18 @@ echo "----------------------------------------"
 echo "compiling:"
 echo "  "
 #g++ main.cpp -o writefile 
+
+# Compile with armadillo:
 g++ main.cpp -o writefile -std=c++11 -O2 \
     -larmadillo \
     -lsfml-graphics -lsfml-window -lsfml-system \
     -lglut -lGLU -lGL
+
+# compile with Eigen:
+# g++ main.cpp -o writefile -std=c++11 -O2 \
+#      -I /usr/include/eigen3/ \
+#      -lsfml-graphics -lsfml-window -lsfml-system \
+#      -lglut -lGLU -lGL
 
 
 #g++ main.cpp -o writefile
