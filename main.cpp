@@ -1,5 +1,9 @@
 #include <iostream>
 #include <fstream>
+
+#include <stdio.h> // for printf
+
+
 #include <armadillo>
 
 //#include <SFML/Window.hpp>
@@ -10,6 +14,9 @@
 // random numbers:
 #include <cstdlib>      // srand() from here?
 #include <ctime>        // and rand() from here?
+
+// for delay:
+#include <unistd.h>
 
 sf::Uint8* armaMatrixToPixels(arma::mat state);
 
@@ -39,13 +46,24 @@ int main () {
     arma::arma_rng::set_seed_random(); 
 
     // window size:
-    int const WINDOW_WIDTH = 500; 
-    int const WINDOW_HEIGHT = 500;
+    int const WINDOW_WIDTH = 700; 
+    int const WINDOW_HEIGHT = 700;
  
     //----------------------------------------
     // Create window instance:
     //----------------------------------------
-    sf::RenderWindow window(sf::VideoMode(500, 500), "My window");
+    sf::RenderWindow window(sf::VideoMode(WINDOW_HEIGHT, WINDOW_WIDTH), "My window");
+
+    // Zooming:
+    // Set the view to a rectangle located at (100,100) with size 400x200
+    sf::View view;
+    view.reset(sf::FloatRect(60, 60, 69, 69)); // (locx, locy, height width
+    // Set its target viewport to be half of the window
+    view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f));
+    // Apply it
+    window.setView(view);
+
+
     //sf::RenderWindow window;
     // can take a third argument: sf::Style::Fullscreen
     // or sf::Style::Resize, and more.
@@ -70,48 +88,31 @@ int main () {
 
 
     //----------------------------------------
-    // make matrix that we want to visualize:
+    // initialize state matrix:
     //----------------------------------------
-    
-
-    // initialize
-    //arma::mat state; //= arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
     const unsigned int W = WINDOW_WIDTH;
     const unsigned int H = WINDOW_HEIGHT;
-    //const unsigned int W = 30;
-    //const unsigned int H = 30;
 
-
-    //----------------------------------------
-    // initialize:
-    //----------------------------------------
     // make matrix for the current state:
     // 0s represent dead cells, 1s represent alive ones.
     
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
-    arma::mat state = arma::randi<arma::mat>( W+2, H+2 , arma::distr_param(0, 1) );  
-    //arma::mat state = arma::zeros<arma::mat>( W+2, H+2 );  
+    //arma::mat state = arma::randi<arma::mat>( W+2, H+2 , arma::distr_param(0, 1) );  
+    arma::mat state = arma::ones<arma::mat>( W+2, H+2 );  
 
 
-    int d; int posx; int posy;
-    
-    // Add a square
-    d = 30;
-    posx = 10; 
-    posy = 10; 
-    state(arma::span(posx,posx+d-1), arma::span(posy,posy+d-1)) = arma::ones<arma::mat>(d,d);
+    //----------------------------------------
+    // Add a glider or some other object:
+    //----------------------------------------
+    arma::mat glider = { {0,0,1}, 
+                         {1,0,1}, 
+                         {0,1,1} };
+    int locx=100; 
+    int locy=100;
+    state(arma::span(locx,locx+2), arma::span(locy,locy+2)) = glider;
 
-    // Add a square
-    d = 40;
-    posx = 40; 
-    posy = 40;
-    state(arma::span(posx,posx+d-1), arma::span(posy,posy+d-1)) = arma::ones<arma::mat>(d,d);
-
-    // Add a square
-    d = 40;
-    posx = 70;
-    posy = 90;
-    state(arma::span(posx,posx+d-1), arma::span(posy,posy+d-1)) = arma::ones<arma::mat>(d,d);
+    int d = 8; 
+    //state(arma::span(locx,locx+d-1), arma::span(locy,locy+d-1)) = arma::ones<arma::mat>(d,d);
 
 
     // Apply periodic boundary conditions:
@@ -156,12 +157,17 @@ int main () {
     //unsigned int height = size.y;
 
 
+    // for delay:
+    unsigned int delay = 1*1e6; // ms
+
+
     window.setActive(true);
+    texture.update(pixels);
+    window.draw(sprite);
     window.display();
 
-
-
-
+    // add some delay after each display:
+    usleep(delay);
 
     int count = 0;
 
@@ -200,7 +206,6 @@ int main () {
         //----------------------------------------
         // Update state matrix here:
         //----------------------------------------
-        //state = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
         newState = getNextGen(state, newState);
         pixels = armaMatrixToPixels(newState);
        
@@ -211,6 +216,8 @@ int main () {
         state = newState;
 
 
+
+
         //----------------------------------------
         // Clear and update screen:
         //----------------------------------------
@@ -219,7 +226,29 @@ int main () {
         texture.update(pixels);
         window.draw(sprite);
         window.display();
+
+
+
+        //----------------------------------------
+        // Save render to image:
+        //----------------------------------------
+        //texture.copyToImage().saveToFile(printf("images/test%d.png", &count)); 
+        auto filename = "images/test" + std::to_string(count) + ".png";
+        texture.copyToImage().saveToFile(filename); 
+
+        count += 1;
+        std::cout << count << std::endl;
+
+        // add some delay:
+        usleep(delay);
+
+
+        if (count >= 3) { 
+            return 0;
+        }
+
     }
+
     
     return 0;
 }
@@ -261,10 +290,15 @@ arma::mat getNextGen(arma::mat state, arma::mat newState) {
             if (current==1 && (aliveNeighbours==2 || aliveNeighbours==3)) {
                 newState(i,j) = 1;
             }
+
             // Rule 2. Any dead cell with three live neighbours becomes alive
-            else if (current==0 && aliveNeighbours==3){
+            //else if (current==0 && (aliveNeighbours==3 || aliveNeighbours==8)){
+            else if (current==0 && (aliveNeighbours==3 )){
                 newState(i,j) = 1;
             }
+
+            // Rule 3. All other live cells die the next generation, and all
+            // other dead ones stay dead. 
             else {
                 newState(i,j) = 0;
             }
@@ -307,8 +341,8 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
     int val;
 
     int ind=0; 
-    for (register int i=1; i<H+1; i++) {
-        for (register int j=1; j<W+1; j++) {
+    for (int i=1; i<H+1; i++) {
+        for (int j=1; j<W+1; j++) {
 
             val = state(i,j)*255;
             //val = rand() % 255;
@@ -329,6 +363,8 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
 }
 
 
+
+
 void fillWithRandomBinary(sf::Uint8* pixels, int const N_ROWS, int const N_COLS){ 
 
     // fills an sf::Uint8* pointer with random binary numbers
@@ -338,8 +374,8 @@ void fillWithRandomBinary(sf::Uint8* pixels, int const N_ROWS, int const N_COLS)
     int val;
 
     int ind=0; 
-    for (register int i=0; i<N_ROWS; i++) {
-        for (register int j=0; j<N_COLS; j++) {
+    for (int i=0; i<N_ROWS; i++) {
+        for (int j=0; j<N_COLS; j++) {
 
             //val = state(i,j)*255;
             val = rand() % 255;

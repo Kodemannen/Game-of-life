@@ -16,7 +16,7 @@ echo "  "
 #g++ main.cpp -o writefile 
 
 # Compile with armadillo:
-g++ main.cpp -o writefile -std=c++11 -O2 \
+g++ main.cpp -o writefile -std=c++17 -O2 \
     -larmadillo \
     -lsfml-graphics -lsfml-window -lsfml-system \
     -lglut -lGLU -lGL
