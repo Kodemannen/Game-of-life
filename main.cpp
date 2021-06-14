@@ -19,13 +19,8 @@
 #include <unistd.h>
 
 sf::Uint8* armaMatrixToPixels(arma::mat state);
-
 arma::mat getNextGen(arma::mat state, arma::mat newState); 
-//arma:: mat neighbourhood(3,3);
-
-//sf::Uint8* fillWithRandom(int const N_ROWS, int const N_COLS);
-
-void fillWithRandomBinary(sf::Uint8* pixels, int const N_ROWS, int const N_COLS);
+arma::mat enlargeMatrix(arma::mat matr, int k); 
 
 
 int main () {
@@ -45,9 +40,16 @@ int main () {
     //arma::arma_rng::set_seed(2); 
     arma::arma_rng::set_seed_random(); 
 
-    // window size:
-    int const WINDOW_WIDTH = 150; 
-    int const WINDOW_HEIGHT = 150;
+
+    // size of state/environment:
+    const unsigned int W = 100;
+    const unsigned int H = 140;
+
+    // zooming factor:
+    int enlargementFactor = 2;
+    
+    int const WINDOW_WIDTH = W*enlargementFactor; 
+    int const WINDOW_HEIGHT = H*enlargementFactor;
  
     //----------------------------------------
     // Create window instance:
@@ -72,16 +74,14 @@ int main () {
     // Set screen position and size:
     //----------------------------------------
     // (x, y), where (0,0) is top right corner
-    window.setPosition(sf::Vector2i(0,20)); 
-    window.setSize(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT));
+    //window.setPosition(sf::Vector2i(0,20)); 
+    //window.setSize(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT));
 
 
 
     //----------------------------------------
     // initialize state matrix:
     //----------------------------------------
-    const unsigned int W = WINDOW_WIDTH;
-    const unsigned int H = WINDOW_HEIGHT;
 
     // make matrix for the current state:
     // 0s represent dead cells, 1s represent alive ones.
@@ -96,22 +96,22 @@ int main () {
     // Zooming:
     //----------------------------------------
     // Set the view to a rectangle located at (100,100) with size 400x200
-    sf::View view;
-    view.reset(sf::FloatRect(30, 30, 40, 40)); // (locx, locy, height width
-    // Set its target viewport to be half of the window
-    //view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f));
-    // Apply it
-    window.setView(view);
+    /* sf::View view; */
+    /* view.reset(sf::FloatRect(10, 10, 40, 40)); // (locx, locy, height width */
+    /* // Set its target viewport to be half of the window */
+    /* //view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f)); */
+    /* // Apply it */
+    /* window.setView(view); */
 
 
     //----------------------------------------
     // Add a glider or some other object:
     //----------------------------------------
-    arma::mat glider = { {0,0,1}, 
-                         {1,0,1}, 
-                         {0,1,1} };
-    int locx=50; 
-    int locy=50;
+    arma::mat glider = { {1,1,1}, 
+                         {1,1,1}, 
+                         {1,1,1} };
+    int locx=20; 
+    int locy=20;
     state(arma::span(locx,locx+2), arma::span(locy,locy+2)) = glider;
 
     int d = 8; 
@@ -138,15 +138,17 @@ int main () {
 
     // initialize pixels matrix:
     //sf::Uint8* pixels = new sf::Uint8[W*H*4];
+
+    arma::mat enlarged = enlargeMatrix(state, enlargementFactor);
     sf::Uint8* pixels; 
-    pixels = armaMatrixToPixels(state);  
+    pixels = armaMatrixToPixels(enlarged);  
     
 
     //fillWithRandomBinary(pixels, W, H);
 
 
     sf::Texture texture;
-    texture.create(W,H);
+    texture.create(W*enlargementFactor,H*enlargementFactor);
 
     sf::Sprite sprite(texture);
     texture.update(pixels);
@@ -161,7 +163,7 @@ int main () {
 
 
     // for delay:
-    unsigned int delay = 1*1e6; // ms
+    unsigned int delay = 3*1e6; // ms
 
 
     window.setActive(true);
@@ -173,6 +175,12 @@ int main () {
     usleep(delay);
 
     int count = 0;
+    //----------------------------------------
+    // Save initial to image:
+    //----------------------------------------
+    auto filename = "images/test" + std::to_string(count) + ".jpg";
+    texture.copyToImage().saveToFile(filename); 
+
 
     bool running = true;
     while (running) {
@@ -210,7 +218,9 @@ int main () {
         // Update state matrix here:
         //----------------------------------------
         newState = getNextGen(state, newState);
-        pixels = armaMatrixToPixels(newState);
+        enlarged = enlargeMatrix(newState, enlargementFactor);
+
+        pixels = armaMatrixToPixels(enlarged);
        
         
         //----------------------------------------
@@ -231,15 +241,16 @@ int main () {
 
 
 
-        //----------------------------------------
-        // Save render to image:
-        //----------------------------------------
-        //texture.copyToImage().saveToFile(printf("images/test%d.png", &count)); 
-        auto filename = "images/test" + std::to_string(count) + ".png";
-        texture.copyToImage().saveToFile(filename); 
+
 
         count += 1;
         std::cout << count << std::endl;
+
+        //----------------------------------------
+        // Save render to image:
+        //----------------------------------------
+        auto filename = "images/test" + std::to_string(count) + ".jpg";
+        texture.copyToImage().saveToFile(filename); 
 
         // add some delay:
         usleep(delay);
@@ -367,31 +378,42 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
 
 
 
-void fillWithRandomBinary(sf::Uint8* pixels, int const N_ROWS, int const N_COLS){ 
 
-    // fills an sf::Uint8* pointer with random binary numbers
 
-    // Make a matrix:
-    //sf::Uint8* pixels = new sf::Uint8[W*H*4];
-    int val;
+arma::mat enlargeMatrix(arma::mat matr, int k) {
+    // maps each pixel in matr to a dxd submatrix in a new matrix
+    // k is the factor of enlargement
+    
+    int const H = matr.n_rows;    // height
+    int const W = matr.n_cols;    // width
 
-    int ind=0; 
-    for (int i=0; i<N_ROWS; i++) {
-        for (int j=0; j<N_COLS; j++) {
+    // initialize new matrix:
+    arma::mat enlarged(H*k, W*k); 
 
-            //val = state(i,j)*255;
-            val = rand() % 255;
+    // markers for where we insert values into the new matrix:
+    int rowMarker=0;       //  
+    int colMarker=0;
 
-            // each pixel is represented by a set of four numbers
-            // between 0 and 255
-            pixels[ind]   = val;      // R
-            pixels[ind+1] = val;      // G
-            pixels[ind+2] = val;      // B
-            pixels[ind+3] = val;      // a
+    // base for the submatrix we will insert into the new:
+    auto base = arma::ones(k,k);
 
-            ind += 4;
+    for (int i=0; i<H; i++) {
+        for (int j=0; j<W; j++) {
+
+            auto val = matr(i,j); 
+
+            // insert values:
+            enlarged(arma::span(rowMarker,rowMarker+k-1), 
+                     arma::span(colMarker,colMarker+k-1)) = base*val;
+
+            colMarker += k;
+            colMarker = colMarker % (k*W);
+
         }
+        rowMarker += k;
+        rowMarker = rowMarker % (k*H);
     }
+
+    return enlarged;
+
 }
-
-
