@@ -46,7 +46,7 @@ int main () {
     const unsigned int H = 140;
 
     // zooming factor:
-    int enlargementFactor = 2;
+    int enlargementFactor = 5;
     
     int const WINDOW_WIDTH = W*enlargementFactor; 
     int const WINDOW_HEIGHT = H*enlargementFactor;
@@ -89,7 +89,7 @@ int main () {
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
     //arma::mat state = arma::randi<arma::mat>( H+2, W+2 , arma::distr_param(0, 1) );  
     //state = state*0;
-    arma::mat state = arma::zeros<arma::mat>( H+2, W+2 );  
+    arma::mat state = arma::zeros<arma::mat>( H, W );  
 
 
     //----------------------------------------
@@ -97,7 +97,7 @@ int main () {
     //----------------------------------------
     // Set the view to a rectangle located at (100,100) with size 400x200
     /* sf::View view; */
-    /* view.reset(sf::FloatRect(10, 10, 40, 40)); // (locx, locy, height width */
+    /* view.reset(sf::FloatRect(10, 10, 40, 40)); // (locV, locH, height width */
     /* // Set its target viewport to be half of the window */
     /* //view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f)); */
     /* // Apply it */
@@ -110,24 +110,25 @@ int main () {
     arma::mat glider = { {1,1,1}, 
                          {1,1,1}, 
                          {1,1,1} };
-    int locx=20; 
-    int locy=20;
-    state(arma::span(locx,locx+2), arma::span(locy,locy+2)) = glider;
+    int locV=10; 
+    int locH=20;
+    state(arma::span(locV,locV+2), arma::span(locH,locH+2)) = glider;
+
 
     int d = 8; 
-    //state(arma::span(locx,locx+d-1), arma::span(locy,locy+d-1)) = arma::ones<arma::mat>(d,d);
+    //state(arma::span(locV,locV+d-1), arma::span(locH,locH+d-1)) = arma::ones<arma::mat>(d,d);
 
 
     // Apply periodic boundary conditions:
     arma::mat boundaryLeft = state.col(1);
-    arma::mat boundaryRight = state.col(W);
+    arma::mat boundaryRight = state.col(W-2);
     arma::mat boundaryTop = state.row(1);
-    arma::mat boundaryBottom = state.row(H);
+    arma::mat boundaryBottom = state.row(H-2);
 
     state.col(0) = boundaryRight;
-    state.col(W+1) = boundaryLeft;
+    state.col(W-1) = boundaryLeft;
     state.row(0) = boundaryBottom;
-    state.row(H+1) = boundaryTop;
+    state.row(H-1) = boundaryTop;
 
 
     // make placeholder for the next generation:
@@ -163,7 +164,7 @@ int main () {
 
 
     // for delay:
-    unsigned int delay = 3*1e6; // ms
+    unsigned int delay = 2*1e6; // ms
 
 
     window.setActive(true);
@@ -269,15 +270,15 @@ int main () {
 
 arma::mat getNextGen(arma::mat state, arma::mat newState) {
     
-    int const H = state.n_rows-2;
-    int const W = state.n_cols-2;
+    int const H = state.n_rows;
+    int const W = state.n_cols;
 
     //arma::mat newState = arma::randi<arma::mat>( W, H , arma::distr_param(0, 1) );  
     //arma::mat newState = arma::diagmat(state);
     //arma:: mat neighbourhood(3,3);
 
-    for (int i=1; i<H+1; i++) {
-        for (int j=1; j<W+1; j++) {
+    for (int i=1; i<H-1; i++) {
+        for (int j=1; j<W-1; j++) {
 
             auto current = state(i,j);
 
@@ -323,14 +324,14 @@ arma::mat getNextGen(arma::mat state, arma::mat newState) {
 
     // Apply periodic boundary conditions: 
     arma::mat boundaryLeft = newState.col(1);
-    arma::mat boundaryRight = newState.col(W);
+    arma::mat boundaryRight = newState.col(W-2);
     arma::mat boundaryTop = newState.row(1);
-    arma::mat boundaryBottom = newState.row(H);
+    arma::mat boundaryBottom = newState.row(H-2);
 
     newState.col(0) = boundaryRight;
-    newState.col(W+1) = boundaryLeft;
+    newState.col(W-1) = boundaryLeft;
     newState.row(0) = boundaryBottom;
-    newState.row(H+1) = boundaryTop;
+    newState.row(H-1) = boundaryTop;
 
 
     return newState;
@@ -346,16 +347,16 @@ int applyRules(arma::mat neighourhood) {
 
 sf::Uint8* armaMatrixToPixels(arma::mat state){ 
 
-    int const H = state.n_rows-2;
-    int const W = state.n_cols-2;
+    int const H = state.n_rows;
+    int const W = state.n_cols;
 
     // Make a matrix:
     sf::Uint8* pixels = new sf::Uint8[W*H*4];
     int val;
 
     int ind=0; 
-    for (int i=1; i<H+1; i++) {
-        for (int j=1; j<W+1; j++) {
+    for (int i=0; i<H; i++) {
+        for (int j=0; j<W; j++) {
 
             val = state(i,j)*255;
             //val = rand() % 255;
