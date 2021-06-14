@@ -32,7 +32,13 @@ int main () {
              | |_| | (_| | | | | | |  __/ | (_) |  _| | | |  _|  __/
               \____|\__,_|_| |_| |_|\___|  \___/|_|   |_|_|_|  \___|
                                                                 
+
+            1. Any live cell with to or three live neighbours survives. 
+            2. Any dead cell with three live neighbours becomes alive
+            3. All other live cells die the next generation, and all
+               other dead ones stay dead. 
     */
+
     // rng seed:
     //srand( (unsigned)time(NULL)); 
     //srand(2);   
@@ -42,11 +48,11 @@ int main () {
 
 
     // size of state/environment:
-    const unsigned int W = 100;
-    const unsigned int H = 140;
+    const unsigned int W = 300;
+    const unsigned int H = 300;
 
     // zooming factor:
-    int enlargementFactor = 5;
+    int enlargementFactor = 2;
     
     int const WINDOW_WIDTH = W*enlargementFactor; 
     int const WINDOW_HEIGHT = H*enlargementFactor;
@@ -87,9 +93,9 @@ int main () {
     // 0s represent dead cells, 1s represent alive ones.
     
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
-    //arma::mat state = arma::randi<arma::mat>( H+2, W+2 , arma::distr_param(0, 1) );  
+    arma::mat state = arma::randi<arma::mat>( H, W , arma::distr_param(0, 1) );  
     //state = state*0;
-    arma::mat state = arma::zeros<arma::mat>( H, W );  
+    //arma::mat state = arma::zeros<arma::mat>( H, W );  
 
 
     //----------------------------------------
@@ -104,19 +110,22 @@ int main () {
     /* window.setView(view); */
 
 
-    //----------------------------------------
-    // Add a glider or some other object:
-    //----------------------------------------
-    arma::mat glider = { {1,1,1}, 
-                         {1,1,1}, 
-                         {1,1,1} };
-    int locV=10; 
-    int locH=20;
-    state(arma::span(locV,locV+2), arma::span(locH,locH+2)) = glider;
+    /* //---------------------------------------- */
+    /* // Add a glider or some other object: */
+    /* //---------------------------------------- */
+    /* arma::mat glider = { {0,1,0}, */ 
+    /*                      {0,0,1}, */ 
+    /*                      {1,1,1} }; */
+    /* int locV=10; */ 
+    /* int locH=20; */
+    /* state(arma::span(locV,locV+2), arma::span(locH,locH+2)) = glider; */
 
 
-    int d = 8; 
-    //state(arma::span(locV,locV+d-1), arma::span(locH,locH+d-1)) = arma::ones<arma::mat>(d,d);
+    // zero out some part:
+    int d = 70; 
+    int locV=50; 
+    int locH=50;
+    state(arma::span(locV,locV+d-1), arma::span(locH,locH+d-1)) = arma::ones<arma::mat>(d,d);
 
 
     // Apply periodic boundary conditions:
@@ -164,7 +173,7 @@ int main () {
 
 
     // for delay:
-    unsigned int delay = 2*1e6; // ms
+    unsigned int delay = 0.1*1e6; // ms
 
 
     window.setActive(true);
@@ -245,7 +254,6 @@ int main () {
 
 
         count += 1;
-        std::cout << count << std::endl;
 
         //----------------------------------------
         // Save render to image:
@@ -257,9 +265,9 @@ int main () {
         usleep(delay);
 
 
-        if (count >= 100) { 
-            return 0;
-        }
+        //if (count >= 100) { 
+        //    return 0;
+        //}
 
     }
 
@@ -284,20 +292,17 @@ arma::mat getNextGen(arma::mat state, arma::mat newState) {
 
             // Check neighbourhood:
             auto neighbourhood = state(arma::span(i-1,i+1), arma::span(j-1,j+1));
-            //std::cout << neighbourhood << std::endl;
-
 
             // count number of alive neighbours:
             int aliveNeighbours = arma::accu(neighbourhood);
 
 
-            /* Rules:
-            1. Any live cell with to or three live neighbours survives. 
-            2. Any dead cell with three live neighbours becomes alive
-            3. All other live cells die the next generation, and all
-               other dead ones stay dead. 
-            */
-            
+            // This is to not include the current cell 
+            // when counting neighbours: 
+            if (current==1) {
+                aliveNeighbours -= 1;
+            }
+
 
 
             // Rule 1.  Any live cell with to or three live neighbours survives. 
@@ -316,11 +321,9 @@ arma::mat getNextGen(arma::mat state, arma::mat newState) {
             else {
                 newState(i,j) = 0;
             }
-            
-
         }
-
     }
+
 
     // Apply periodic boundary conditions: 
     arma::mat boundaryLeft = newState.col(1);
@@ -358,9 +361,7 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
     for (int i=0; i<H; i++) {
         for (int j=0; j<W; j++) {
 
-            val = state(i,j)*255;
-            //val = rand() % 255;
-            //std::cout << val << std::endl;
+            val = state(i,j)*200;
 
             // each pixel is represented by a set of four numbers
             // between 0 and 255
