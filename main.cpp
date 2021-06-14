@@ -46,23 +46,13 @@ int main () {
     arma::arma_rng::set_seed_random(); 
 
     // window size:
-    int const WINDOW_WIDTH = 700; 
-    int const WINDOW_HEIGHT = 700;
+    int const WINDOW_WIDTH = 150; 
+    int const WINDOW_HEIGHT = 150;
  
     //----------------------------------------
     // Create window instance:
     //----------------------------------------
-    sf::RenderWindow window(sf::VideoMode(WINDOW_HEIGHT, WINDOW_WIDTH), "My window");
-
-    // Zooming:
-    // Set the view to a rectangle located at (100,100) with size 400x200
-    sf::View view;
-    view.reset(sf::FloatRect(60, 60, 69, 69)); // (locx, locy, height width
-    // Set its target viewport to be half of the window
-    view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f));
-    // Apply it
-    window.setView(view);
-
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "My window");
 
     //sf::RenderWindow window;
     // can take a third argument: sf::Style::Fullscreen
@@ -97,8 +87,21 @@ int main () {
     // 0s represent dead cells, 1s represent alive ones.
     
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
-    //arma::mat state = arma::randi<arma::mat>( W+2, H+2 , arma::distr_param(0, 1) );  
-    arma::mat state = arma::ones<arma::mat>( W+2, H+2 );  
+    //arma::mat state = arma::randi<arma::mat>( H+2, W+2 , arma::distr_param(0, 1) );  
+    //state = state*0;
+    arma::mat state = arma::zeros<arma::mat>( H+2, W+2 );  
+
+
+    //----------------------------------------
+    // Zooming:
+    //----------------------------------------
+    // Set the view to a rectangle located at (100,100) with size 400x200
+    sf::View view;
+    view.reset(sf::FloatRect(30, 30, 40, 40)); // (locx, locy, height width
+    // Set its target viewport to be half of the window
+    //view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f));
+    // Apply it
+    window.setView(view);
 
 
     //----------------------------------------
@@ -107,8 +110,8 @@ int main () {
     arma::mat glider = { {0,0,1}, 
                          {1,0,1}, 
                          {0,1,1} };
-    int locx=100; 
-    int locy=100;
+    int locx=50; 
+    int locy=50;
     state(arma::span(locx,locx+2), arma::span(locy,locy+2)) = glider;
 
     int d = 8; 
@@ -217,7 +220,6 @@ int main () {
 
 
 
-
         //----------------------------------------
         // Clear and update screen:
         //----------------------------------------
@@ -243,7 +245,7 @@ int main () {
         usleep(delay);
 
 
-        if (count >= 3) { 
+        if (count >= 100) { 
             return 0;
         }
 
@@ -263,8 +265,8 @@ arma::mat getNextGen(arma::mat state, arma::mat newState) {
     //arma::mat newState = arma::diagmat(state);
     //arma:: mat neighbourhood(3,3);
 
-    for (int i=1; i<W+1; i++) {
-        for (int j=1; j<H+1; j++) {
+    for (int i=1; i<H+1; i++) {
+        for (int j=1; j<W+1; j++) {
 
             auto current = state(i,j);
 

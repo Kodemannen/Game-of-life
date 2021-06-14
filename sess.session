@@ -25,18 +25,15 @@ badd +392 ~/repos/useful-stuff/topics/other/ideas.txt
 badd +20 ~/.bashrc
 badd +40 .gitignore
 badd +2 term://.//6965:/bin/bash
-badd +1 term://.//5715:/bin/bash
+badd +1 term://.//114:/bin/bash
 argglobal
 %argdel
 $argadd main.cpp
-edit plot.py
+edit main.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
 split
-wincmd _ | wincmd |
-split
-2wincmd k
-wincmd w
+1wincmd k
 wincmd w
 set nosplitbelow
 wincmd t
@@ -44,9 +41,8 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 17 + 26) / 52)
-exe '2resize ' . ((&lines * 16 + 26) / 52)
-exe '3resize ' . ((&lines * 15 + 26) / 52)
+exe '1resize ' . ((&lines * 34 + 26) / 52)
+exe '2resize ' . ((&lines * 15 + 26) / 52)
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -57,25 +53,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 27 - ((16 * winheight(0) + 8) / 17)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-27
-normal! 0
-wincmd w
-argglobal
-if bufexists("main.cpp") | buffer main.cpp | else | edit main.cpp | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 52 - ((10 * winheight(0) + 8) / 16)
+let s:l = 52 - ((22 * winheight(0) + 17) / 34)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -83,7 +61,7 @@ normal! zt
 normal! 019|
 wincmd w
 argglobal
-if bufexists("term://.//5715:/bin/bash") | buffer term://.//5715:/bin/bash | else | edit term://.//5715:/bin/bash | endif
+if bufexists("term://.//114:/bin/bash") | buffer term://.//114:/bin/bash | else | edit term://.//114:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -99,9 +77,8 @@ normal! zt
 1
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 17 + 26) / 52)
-exe '2resize ' . ((&lines * 16 + 26) / 52)
-exe '3resize ' . ((&lines * 15 + 26) / 52)
+exe '1resize ' . ((&lines * 34 + 26) / 52)
+exe '2resize ' . ((&lines * 15 + 26) / 52)
 tabnext 1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
