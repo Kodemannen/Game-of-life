@@ -22,6 +22,10 @@ sf::Uint8* armaMatrixToPixels(arma::mat state);
 arma::mat getNextGen(arma::mat state, arma::mat newState); 
 arma::mat enlargeMatrix(arma::mat matr, int k); 
 
+arma::mat createGlider();
+arma::mat createRPentominus();
+arma::mat createExploder();
+
 
 int main () {
 
@@ -48,14 +52,14 @@ int main () {
 
 
     // size of state/environment:
-    const unsigned int W = 300;
-    const unsigned int H = 300;
+    const unsigned int H = 100;
+    const unsigned int W = 120;
 
     // zooming factor:
-    int enlargementFactor = 2;
+    int enlargementFactor = 7;
     
-    int const WINDOW_WIDTH = W*enlargementFactor; 
     int const WINDOW_HEIGHT = H*enlargementFactor;
+    int const WINDOW_WIDTH = W*enlargementFactor; 
  
     //----------------------------------------
     // Create window instance:
@@ -93,9 +97,9 @@ int main () {
     // 0s represent dead cells, 1s represent alive ones.
     
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
-    arma::mat state = arma::randi<arma::mat>( H, W , arma::distr_param(0, 1) );  
+    //arma::mat state = arma::randi<arma::mat>( H, W , arma::distr_param(0, 1) );  
     //state = state*0;
-    //arma::mat state = arma::zeros<arma::mat>( H, W );  
+    arma::mat state = arma::zeros<arma::mat>( H, W );  
 
 
     //----------------------------------------
@@ -110,22 +114,35 @@ int main () {
     /* window.setView(view); */
 
 
-    /* //---------------------------------------- */
-    /* // Add a glider or some other object: */
-    /* //---------------------------------------- */
-    /* arma::mat glider = { {0,1,0}, */ 
-    /*                      {0,0,1}, */ 
-    /*                      {1,1,1} }; */
-    /* int locV=10; */ 
-    /* int locH=20; */
-    /* state(arma::span(locV,locV+2), arma::span(locH,locH+2)) = glider; */
+    //----------------------------------------
+    // Add a glider or some other object:
+    //----------------------------------------
+    //arma::mat c = createGlider();
+    //arma::mat c = createRPentominus();
+    //arma::mat c = createExploder();
+
+    int c_n_rows = c.n_rows; 
+    int c_n_cols = c.n_cols; 
+    int locV=40; 
+    int locH=40;
+    state(arma::span(locV,locV+c_n_rows-1), arma::span(locH,locH+c_n_cols-1)) = c;
 
 
-    // zero out some part:
-    int d = 70; 
-    int locV=50; 
-    int locH=50;
-    state(arma::span(locV,locV+d-1), arma::span(locH,locH+d-1)) = arma::ones<arma::mat>(d,d);
+    //----------------------------------------
+    // Add line:
+    //----------------------------------------
+    /* arma::mat c2 = arma::ones<arma::mat>(1,W); */
+    /* state(H/2, arma::span(0,W-1)) = c2; */
+
+
+    //// zero out some part:
+    //int d = H/3; 
+    //int locV=0; 
+    //int locH=0;
+    ////state(arma::span(locV,locV+d-1), 
+    ////      arma::span(locH,locH+d-1)) = arma::randi<arma::mat>(d,d, arma::distr_param(0, 1));
+    //state(arma::span(locV,locV+d-1), 
+    //      arma::span(locH,locH+d-1)) = arma::ones(d,d);
 
 
     // Apply periodic boundary conditions:
@@ -180,6 +197,8 @@ int main () {
     texture.update(pixels);
     window.draw(sprite);
     window.display();
+
+
 
     // add some delay after each display:
     usleep(delay);
@@ -239,7 +258,6 @@ int main () {
         state = newState;
 
 
-
         //----------------------------------------
         // Clear and update screen:
         //----------------------------------------
@@ -250,10 +268,8 @@ int main () {
         window.display();
 
 
-
-
-
         count += 1;
+        std::cout << count << std::endl;
 
         //----------------------------------------
         // Save render to image:
@@ -265,13 +281,13 @@ int main () {
         usleep(delay);
 
 
-        //if (count >= 100) { 
-        //    return 0;
-        //}
+        if (count >= 2000) { 
+            return 0;
+        }
 
     }
 
-    
+
     return 0;
 }
 
@@ -383,8 +399,10 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
 
 
 arma::mat enlargeMatrix(arma::mat matr, int k) {
-    // maps each pixel in matr to a dxd submatrix in a new matrix
-    // k is the factor of enlargement
+    /*
+    Function that maps each pixel in matr to a k \times k submatrix in a new matrix, 
+    i.e. makes every pixel into a larger square.
+    */
     
     int const H = matr.n_rows;    // height
     int const W = matr.n_cols;    // width
@@ -418,4 +436,27 @@ arma::mat enlargeMatrix(arma::mat matr, int k) {
 
     return enlarged;
 
+}
+
+
+
+arma::mat createGlider() {
+    arma::mat glider = {{0,0,1}, 
+                        {1,0,1},
+                        {0,1,1}};
+    return glider;
+}
+
+arma::mat createRPentominus() {
+    arma::mat rPentominus = {{0,1,1}, 
+                             {1,1,0},
+                             {0,1,0}};
+    return rPentominus;
+}
+
+arma::mat createExploder() {
+    arma::mat exploder = {{1,0,1}, 
+                          {1,0,1},
+                          {1,1,1}};
+    return exploder;
 }

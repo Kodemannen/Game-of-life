@@ -21,6 +21,14 @@ g++ main.cpp -o writefile -std=c++17 -O2 \
     -lsfml-graphics -lsfml-window -lsfml-system \
     -lglut -lGLU -lGL
 
+
+# # Compile for windows: does NOT work 
+# x86_64-w64-mingw32-gcc main.cpp -o writefile.exe -std=c++17 -O2 \
+#     -larmadillo \
+#     -lsfml-graphics -lsfml-window -lsfml-system \
+#     -lglut -lGLU -lGL
+
+
 # compile with Eigen:
 # g++ main.cpp -o writefile -std=c++11 -O2 \
 #      -I /usr/include/eigen3/ \

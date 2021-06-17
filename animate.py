@@ -5,57 +5,44 @@ import time
 import sys
 import os
 
-with open("pop.txt", "r") as popfile:
-    data = np.loadtxt(popfile)
-    #data = abs(data - 1)
 
-with open("rulevec.txt", "r") as f:
-    rulevec = np.loadtxt(f, dtype=np.int32)
+fps=10
 
-    # to string as well:
-    rulevecstring = ""
-    for elem in rulevec: 
-        rulevecstring += str(elem)
+fig, ax = plt.subplots(nrows=1, ncols=1, sharex=False,  sharey=False, frameon=False)
+
+indices = np.arange(0, 2000)
 
 
 
-# windows size:
-N_GENERATIONS = data.shape[0]
-POPSIZE = data.shape[1]
-SCREEN_SIZE_Y = POPSIZE     # how big screen in y-direction
+# with open("matrix-files/states-H100-W120.txt", "r") as matfile:
+#     data = np.loadtxt(matfile)
+#     print(data.shape) 
+#     exit("fitte")
 
-fps = 30
-
-
-startmark = np.array([0])
-endmark = np.array([2])
-
-#current_screen = np.ones((SCREEN_SIZE_Y, POPSIZE))     # start with white screen
-#current_screen[-1, :] = data[0, :]         # start at the top 
-fig, ax = plt.subplots(nrows=1, ncols=1, sharex=False,  sharey=False)
-
-indices = np.arange(0, N_GENERATIONS)
 
 
 def update_frame(i):
 
-    print(i/len(indices) * 100, "\%")
+    print(i)
+
     ax.clear()
+    img = plt.imread(f"images/test{i}.jpg")
 
-    if i < SCREEN_SIZE_Y:
 
-        current_screen = np.ones((SCREEN_SIZE_Y, POPSIZE))
-
-        # add take the ith first data on top of the screen:
-        current_screen[:i+1, :] = data[:i+1, :]
-
-    else:
-
-        current_screen = data[i-SCREEN_SIZE_Y:i, :]
-
-    ax.imshow(current_screen)
+    #ax.imshow(img, aspect="auto")
+    ax.imshow(img)
     ax.axis('off')
-    
+    #fig.tight_layout()
+
+    # ax.spines['right'].set_color('none')
+    # ax.spines['left'].set_color('none')
+    # ax.spines['top'].set_color('none')
+    # ax.spines['bottom'].set_color('none')
+    # # turn off ticks
+    # ax.xaxis.set_ticks_position('none')
+    # ax.yaxis.set_ticks_position('none')
+    # ax.xaxis.set_ticklabels([])
+    # ax.yaxis.set_ticklabels([])
             
 
 
@@ -66,7 +53,7 @@ Writer = animation.writers['ffmpeg']
 writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
 
 ani = animation.FuncAnimation(fig, update_frame, indices)   #, fargs=(count,indices))
-ani.save("1d_cellular_automata_" + rulevecstring + ".mp4", writer=writer, dpi=200)
+ani.save("game-of-life.mp4", writer=writer, dpi=200)
 
 
 
