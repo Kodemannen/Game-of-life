@@ -50,13 +50,14 @@ int main () {
     //arma::arma_rng::set_seed(2); 
     arma::arma_rng::set_seed_random(); 
 
+    srand( (unsigned)time(NULL)); 
 
     // size of state/environment:
-    const unsigned int H = 100;
-    const unsigned int W = 120;
+    const unsigned int H = 1080;
+    const unsigned int W = 1920;
 
-    // zooming factor:
-    int enlargementFactor = 7;
+    // zooming factor:0
+    int enlargementFactor = 1;
     
     int const WINDOW_HEIGHT = H*enlargementFactor;
     int const WINDOW_WIDTH = W*enlargementFactor; 
@@ -97,9 +98,9 @@ int main () {
     // 0s represent dead cells, 1s represent alive ones.
     
     // We let it be +2 larger in each dimension to add padding for periodic boundary 
-    //arma::mat state = arma::randi<arma::mat>( H, W , arma::distr_param(0, 1) );  
+    arma::mat state = arma::randi<arma::mat>( H, W , arma::distr_param(0, 1) );  
     //state = state*0;
-    arma::mat state = arma::zeros<arma::mat>( H, W );  
+    //arma::mat state = arma::zeros<arma::mat>( H, W );  
 
 
     //----------------------------------------
@@ -117,15 +118,22 @@ int main () {
     //----------------------------------------
     // Add a glider or some other object:
     //----------------------------------------
-    //arma::mat c = createGlider();
-    //arma::mat c = createRPentominus();
-    //arma::mat c = createExploder();
+    arma::mat glider = createGlider();
+    arma::mat rPentominus = createRPentominus();
+    arma::mat exploder = createExploder(); 
+    int loc[2];
 
-    int c_n_rows = c.n_rows; 
-    int c_n_cols = c.n_cols; 
-    int locV=40; 
-    int locH=40;
-    state(arma::span(locV,locV+c_n_rows-1), arma::span(locH,locH+c_n_cols-1)) = c;
+
+
+
+    for (int i=0; i<10; i++)
+    { 
+        loc[0] = rand() % 50;
+        loc[1] = rand() % 50;
+        state(arma::span(loc[0],loc[0]+2), arma::span(loc[1],loc[1]+2)) = rPentominus;
+    }
+
+
 
 
     //----------------------------------------
@@ -190,7 +198,7 @@ int main () {
 
 
     // for delay:
-    unsigned int delay = 0.1*1e6; // ms
+    unsigned int delay = 0.01*1e6; // ms
 
 
     window.setActive(true);
@@ -207,8 +215,13 @@ int main () {
     //----------------------------------------
     // Save initial to image:
     //----------------------------------------
-    auto filename = "images/test" + std::to_string(count) + ".jpg";
-    texture.copyToImage().saveToFile(filename); 
+    bool save_img_files = false;
+    
+    if (save_img_files) 
+    {
+        auto filename = "images/test" + std::to_string(count) + ".jpg";
+        texture.copyToImage().saveToFile(filename); 
+    }
 
 
     bool running = true;
@@ -247,9 +260,17 @@ int main () {
         // Update state matrix here:
         //----------------------------------------
         newState = getNextGen(state, newState);
-        enlarged = enlargeMatrix(newState, enlargementFactor);
 
-        pixels = armaMatrixToPixels(enlarged);
+        if (enlargementFactor > 1)
+        {
+            enlarged = enlargeMatrix(newState, enlargementFactor);
+            pixels = armaMatrixToPixels(enlarged);
+        }
+        else
+        {
+            pixels = armaMatrixToPixels(newState);
+        }
+
        
         
         //----------------------------------------
@@ -269,21 +290,24 @@ int main () {
 
 
         count += 1;
-        std::cout << count << std::endl;
+        //std::cout << count << std::endl;
 
         //----------------------------------------
         // Save render to image:
         //----------------------------------------
-        auto filename = "images/test" + std::to_string(count) + ".jpg";
-        texture.copyToImage().saveToFile(filename); 
+        if (save_img_files)
+        {
+            auto filename = "images/test" + std::to_string(count) + ".jpg";
+            texture.copyToImage().saveToFile(filename); 
+        }
 
         // add some delay:
         usleep(delay);
 
 
-        if (count >= 2000) { 
-            return 0;
-        }
+        //if (count >= 2000) { 
+        //    return 0;
+        //}
 
     }
 
@@ -460,3 +484,5 @@ arma::mat createExploder() {
                           {1,1,1}};
     return exploder;
 }
+
+
