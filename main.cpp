@@ -18,6 +18,15 @@
 // for delay:
 #include <unistd.h>
 
+
+
+// size of state/environment:
+const int enlargementFactor = 1;
+const unsigned int H = 1080 / enlargementFactor;
+const unsigned int W = 1920 / enlargementFactor;
+
+sf::Uint8 * pixels = new sf::Uint8[W*H*4];
+
 sf::Uint8* armaMatrixToPixels(arma::mat state);
 arma::mat getNextGen(arma::mat state, arma::mat newState); 
 arma::mat enlargeMatrix(arma::mat matr, int k); 
@@ -52,12 +61,7 @@ int main () {
 
     srand( (unsigned)time(NULL)); 
 
-    // size of state/environment:
-    const unsigned int H = 1080;
-    const unsigned int W = 1920;
-
     // zooming factor:0
-    int enlargementFactor = 1;
     
     int const WINDOW_HEIGHT = H*enlargementFactor;
     int const WINDOW_WIDTH = W*enlargementFactor; 
@@ -198,7 +202,7 @@ int main () {
 
 
     // for delay:
-    unsigned int delay = 0.01*1e6; // ms
+    unsigned int delay = 0.04*1e6; // ms
 
 
     window.setActive(true);
@@ -224,12 +228,12 @@ int main () {
     }
 
 
+    // initialize the event thing:
+    sf::Event event;    
+
     bool running = true;
     while (running) {
 
-
-        // initialize the event thing:
-        sf::Event event;    
 
         while (window.pollEvent(event)){
             // sf::Event::Closed = 1 when the close button is presset
@@ -394,7 +398,7 @@ sf::Uint8* armaMatrixToPixels(arma::mat state){
     int const W = state.n_cols;
 
     // Make a matrix:
-    sf::Uint8* pixels = new sf::Uint8[W*H*4];
+    // sf::Uint8* pixels = new sf::Uint8[W*H*4];
     int val;
 
     int ind=0; 
