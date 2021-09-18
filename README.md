@@ -1,2 +1,2 @@
 # Game-of-life
-Cellular automata in C++
+C++ implementation of Conway's Game of Life
